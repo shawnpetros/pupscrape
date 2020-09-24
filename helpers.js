@@ -66,7 +66,7 @@ function getPetsFromIframeHTML(html) {
     const id = $(".list-animal-id", dogInfoBlock).text();
     if (!id) return;
     const url = `http://ws.petango.com/webservices/adoptablesearch/wsAdoptableAnimalDetails.aspx?id=${id}`;
-    const photo = $(".list-animal-photo").attr("src");
+    const photo = $(".list-animal-photo", dogInfoBlock).attr("src");
     const name = $("a", dogInfoBlock).text();
     const [sex, spayedNeutered] = $(".list-animal-sexSN", dogInfoBlock)
       .text()
