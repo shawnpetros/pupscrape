@@ -1,0 +1,52 @@
+service: petscrape
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+functions:
+  getPets:
+    handler: handler.getPets
+    events:
+      - schedule: rate(1 hour)
+      - http:
+          path: pets
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    jrpupsnstuffdogs:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: jrpupsnstuffdogs
+        AttributeDefinitions:
+          - AttributeName: dogId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: dogId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: jrpupsnstuffdogs
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeTable
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+              Resource: arn:aws:dynamodb:*:*:table/jrpupsnstuffdogs
+        Roles:
+          - Ref: IamRoleLambdaExecution

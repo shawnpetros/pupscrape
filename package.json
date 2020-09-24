@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "aws-sdk": "2.759.0",
+    "axios": "0.20.0",
+    "cheerio": "1.0.0-rc.3",
+    "jest": "26.4.2",
+    "lodash": "4.17.20",
+    "twilio": "3.49.3"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}
