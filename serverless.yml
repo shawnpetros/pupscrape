@@ -1,5 +1,8 @@
-service: petscrape
+service: pupscrape
 frameworkVersion: "2"
+
+org: shawnpetros
+app: pupscrape
 
 provider:
   name: aws
