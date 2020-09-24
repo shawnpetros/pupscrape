@@ -5,7 +5,10 @@ const { differenceBy } = require("lodash");
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
 async function sendTwilioTextMessage(numDogs) {
-  const client = new Twilio("<account_id>", "<account_secret>");
+  const client = new Twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
 
   await client.messages.create({
     to: "<phone_number>",
