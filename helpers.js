@@ -13,18 +13,15 @@ async function sendTwilioTextMessage(numDogs) {
   });
 }
 
-async function getPetsFromDynamo() {
-  const lastDogs = await dynamo
+function getPetsFromDynamo() {
+  return dynamo
     .scan({
       TableName: "jrpupsnstuffdogs",
     })
     .promise();
-
-  console.log(lastDogs);
-  return lastDogs;
 }
 
-async function deletePetsFromDynamo(idToDelete) {
+function deletePetsFromDynamo(idToDelete) {
   if (idToDelete) {
     return dynamo
       .delete({
@@ -53,6 +50,11 @@ function petsDiff(newPets, oldPets) {
   return differenceBy(newPets, oldPets, "id");
 }
 
+function mergeNewPets(newPets, oldPets) {
+  // console.log({ newPets, oldPets });
+  return [...oldPets, ...newPets];
+}
+
 function getIframeFromPetUrl(html) {
   const $ = cheerio.load(html);
   const iFrameUrl = $("iframe").attr("src");
@@ -66,7 +68,9 @@ function getPetsFromIframeHTML(html) {
     const id = $(".list-animal-id", dogInfoBlock).text();
     if (!id) return;
     const url = `http://ws.petango.com/webservices/adoptablesearch/wsAdoptableAnimalDetails.aspx?id=${id}`;
-    const photo = $(".list-animal-photo", dogInfoBlock).attr("src");
+    const photo = $(".list-animal-photo", dogInfoBlock)
+      .attr("src")
+      .replace("_TN1", ""); // remove the thumbnail declaration
     const name = $("a", dogInfoBlock).text();
     const [sex, spayedNeutered] = $(".list-animal-sexSN", dogInfoBlock)
       .text()
@@ -74,6 +78,7 @@ function getPetsFromIframeHTML(html) {
     const breed = $(".list-animal-breed", dogInfoBlock).text();
     const age = $(".list-animal-age", dogInfoBlock).text();
     dogs[index] = {
+      dateAdded: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
       id,
       url,
       photo,
@@ -95,5 +100,6 @@ module.exports = {
   savePetsToDynamo,
   deletePetsFromDynamo,
   petsDiff,
+  mergeNewPets,
   sendTwilioTextMessage,
 };

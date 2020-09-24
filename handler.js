@@ -6,6 +6,7 @@ const {
   savePetsToDynamo,
   deletePetsFromDynamo,
   petsDiff,
+  mergeNewPets,
 } = require("./helpers");
 
 module.exports.getPets = async (event) => {
@@ -15,13 +16,13 @@ module.exports.getPets = async (event) => {
 
   const iFrameUrl = getIframeFromPetUrl(petHTML);
   const { data: iFrameHTML } = await axios(iFrameUrl);
-  const dogsToSave = getPetsFromIframeHTML(iFrameHTML);
+  const nextDogs = getPetsFromIframeHTML(iFrameHTML);
   const {
-    Items: [lastDogs = {}],
+    Items: [prevDogs = { dogs: [] }],
   } = await getPetsFromDynamo();
-  await deletePetsFromDynamo(lastDogs.dogId);
-  await savePetsToDynamo(dogsToSave);
-  const newDogIds = petsDiff(dogsToSave, lastDogs.dogs).map((dog) => dog.id);
+  const newDogs = petsDiff(nextDogs, prevDogs.dogs);
+  const newDogIds = newDogs.map((dog) => dog.id);
+  const allDogs = mergeNewPets(newDogs, prevDogs.dogs);
 
   return {
     statusCode: 200,
@@ -32,14 +33,43 @@ module.exports.getPets = async (event) => {
     body: JSON.stringify(
       {
         message: "jrpupsnstuff site parsed",
-        dogList: dogsToSave,
+        dogList: allDogs,
         newDogIds,
       },
       null,
       2
     ),
   };
+};
 
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
+module.exports.writePets = async (event) => {
+  const { data: petHTML } = await axios(
+    "http://www.jrspupsnstuff.org/?page=allpups"
+  );
+
+  const iFrameUrl = getIframeFromPetUrl(petHTML);
+  const { data: iFrameHTML } = await axios(iFrameUrl);
+  const nextDogs = getPetsFromIframeHTML(iFrameHTML);
+  const {
+    Items: [prevDogs = { dogs: [] }],
+  } = await getPetsFromDynamo();
+  await deletePetsFromDynamo(prevDogs.dogId);
+  const newDogs = petsDiff(nextDogs, prevDogs.dogs);
+  const allDogs = mergeNewPets(newDogs, prevDogs.dogs);
+  await savePetsToDynamo(allDogs);
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
+    body: JSON.stringify(
+      {
+        message: "jrpupsnstuff site parsed",
+      },
+      null,
+      2
+    ),
+  };
 };

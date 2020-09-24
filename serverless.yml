@@ -5,10 +5,16 @@ provider:
   name: aws
   runtime: nodejs12.x
 functions:
+  writePets:
+    handler: handler.writePets
+    events:
+      - schedule: cron(15 13 * * ? *) # every day at 13:15:00UTC (8:15am CDT)
+    environment:
+      TWILIO_ACCOUNT_SID: ${ssm:/twilio-account-sid}
+      TWILIO_AUTH_TOKEN: ${ssm:/twilio-auth-token}
   getPets:
     handler: handler.getPets
     events:
-      - schedule: rate(1 hour)
       - http:
           path: pets
           method: get
