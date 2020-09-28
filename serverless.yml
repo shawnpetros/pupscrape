@@ -12,6 +12,10 @@ functions:
     handler: handler.writePets
     events:
       - schedule: cron(15 13 * * ? *) # every day at 13:15:00UTC (8:15am CDT)
+      - http:
+        path: parse
+        method: get
+        cors: true
     environment:
       TWILIO_ACCOUNT_SID: ${param:twilio_account_sid}
       TWILIO_AUTH_TOKEN: ${param:twilio_auth_token}
@@ -19,9 +23,9 @@ functions:
     handler: handler.getPets
     events:
       - http:
-          path: pets
-          method: get
-          cors: true
+        path: pets
+        method: get
+        cors: true
 
 resources:
   Resources:

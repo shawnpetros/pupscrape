@@ -11,8 +11,8 @@ async function sendTwilioTextMessage(numDogs) {
   );
 
   await client.messages.create({
-    to: "<phone_number>",
-    message: "this is a test",
+    to: "8059098480",
+    message: `this is a test: ${numDogs}`,
   });
 }
 

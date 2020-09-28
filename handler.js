@@ -9,20 +9,10 @@ const {
   mergeNewPets,
 } = require("./helpers");
 
-module.exports.getPets = async (event) => {
-  const { data: petHTML } = await axios(
-    "http://www.jrspupsnstuff.org/?page=allpups"
-  );
-
-  const iFrameUrl = getIframeFromPetUrl(petHTML);
-  const { data: iFrameHTML } = await axios(iFrameUrl);
-  const nextDogs = getPetsFromIframeHTML(iFrameHTML);
+module.exports.getPets = async () => {
   const {
-    Items: [prevDogs = { dogs: [] }],
+    Items: [currDogs = { dogs: [] }],
   } = await getPetsFromDynamo();
-  const newDogs = petsDiff(nextDogs, prevDogs.dogs);
-  const newDogIds = newDogs.map((dog) => dog.id);
-  const allDogs = mergeNewPets(newDogs, prevDogs.dogs);
 
   return {
     statusCode: 200,
@@ -33,8 +23,7 @@ module.exports.getPets = async (event) => {
     body: JSON.stringify(
       {
         message: "jrpupsnstuff site parsed",
-        dogList: allDogs,
-        newDogIds,
+        dogList: currDogs,
       },
       null,
       2
@@ -42,7 +31,7 @@ module.exports.getPets = async (event) => {
   };
 };
 
-module.exports.writePets = async (event) => {
+module.exports.writePets = async () => {
   const { data: petHTML } = await axios(
     "http://www.jrspupsnstuff.org/?page=allpups"
   );
@@ -54,8 +43,11 @@ module.exports.writePets = async (event) => {
     Items: [prevDogs = { dogs: [] }],
   } = await getPetsFromDynamo();
   await deletePetsFromDynamo(prevDogs.dogId);
-  const newDogs = petsDiff(nextDogs, prevDogs.dogs);
-  const allDogs = mergeNewPets(newDogs, prevDogs.dogs);
+  const newDogIds = petsDiff(nextDogs, prevDogs.dogs).map((dog) => dog.id);
+  const allDogs = prevDogs.reduce((acc, dog) => {
+    if (newDogIds.includes(dog.id)) return [...acc, { ...dog, new: true }];
+    return [...acc, dog];
+  }, []);
   await savePetsToDynamo(allDogs);
 
   return {
