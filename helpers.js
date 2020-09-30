@@ -64,7 +64,6 @@ function petsDiff(newPets, oldPets) {
 }
 
 function mergeNewPets(newPets, oldPets) {
-  // console.log({ newPets, oldPets });
   return [...oldPets, ...newPets];
 }
 

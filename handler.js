@@ -45,10 +45,10 @@ module.exports.writePets = async () => {
   } = await getPetsFromDynamo();
   await deletePetsFromDynamo(prevDogs.dogId);
   const newDogIds = petsDiff(nextDogs, prevDogs.dogs).map((dog) => dog.id);
-  const allDogs = nextDogs.reduce((acc, dog) => {
-    if (newDogIds.includes(dog.id)) return [...acc, { ...dog, new: true }];
-    return [...acc, dog];
-  }, []);
+  const allDogs = nextDogs.map((dog) => ({
+    ...dog,
+    new: newDogIds.includes(dog.id),
+  }));
   await savePetsToDynamo(allDogs);
 
   if (newDogIds.length > 0) await sendTwilioTextMessage(newDogIds.length);
