@@ -5,15 +5,25 @@ const { differenceBy } = require("lodash");
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
 async function sendTwilioTextMessage(numDogs) {
-  const client = new Twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
+  const {
+    TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN,
+    TWILIO_DEST_NUMS,
+    TWILIO_SRC_NUM: from,
+  } = process.env;
+
+  const toNums = TWILIO_DEST_NUMS.split(",");
+  const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+
+  const messagePromises = toNums.map((to) =>
+    client.messages.create({
+      to,
+      from,
+      body: `there are ${numDogs} new dogs listed today`,
+    })
   );
 
-  await client.messages.create({
-    to: "8059098480",
-    message: `this is a test: ${numDogs}`,
-  });
+  await Promise.all(messagePromises);
 }
 
 function getPetsFromDynamo() {

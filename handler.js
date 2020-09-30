@@ -7,6 +7,7 @@ const {
   deletePetsFromDynamo,
   petsDiff,
   mergeNewPets,
+  sendTwilioTextMessage,
 } = require("./helpers");
 
 module.exports.getPets = async () => {
@@ -44,11 +45,13 @@ module.exports.writePets = async () => {
   } = await getPetsFromDynamo();
   await deletePetsFromDynamo(prevDogs.dogId);
   const newDogIds = petsDiff(nextDogs, prevDogs.dogs).map((dog) => dog.id);
-  const allDogs = prevDogs.reduce((acc, dog) => {
+  const allDogs = nextDogs.reduce((acc, dog) => {
     if (newDogIds.includes(dog.id)) return [...acc, { ...dog, new: true }];
     return [...acc, dog];
   }, []);
   await savePetsToDynamo(allDogs);
+
+  if (newDogIds.length > 0) await sendTwilioTextMessage(newDogIds.length);
 
   return {
     statusCode: 200,
@@ -59,6 +62,10 @@ module.exports.writePets = async () => {
     body: JSON.stringify(
       {
         message: "jrpupsnstuff site parsed",
+        prevDogs: prevDogs.dogs,
+        newDogIds,
+        nextDogs,
+        allDogs,
       },
       null,
       2
