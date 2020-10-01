@@ -6,7 +6,6 @@ const {
   savePetsToDynamo,
   deletePetsFromDynamo,
   petsDiff,
-  mergeNewPets,
   sendTwilioTextMessage,
 } = require("./helpers");
 

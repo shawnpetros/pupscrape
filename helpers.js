@@ -29,7 +29,7 @@ async function sendTwilioTextMessage(numDogs) {
 function getPetsFromDynamo() {
   return dynamo
     .scan({
-      TableName: "jrpupsnstuffdogs",
+      TableName: process.env.DYNAMO_TABLE_NAME,
     })
     .promise();
 }
@@ -38,7 +38,7 @@ function deletePetsFromDynamo(idToDelete) {
   if (idToDelete) {
     return dynamo
       .delete({
-        TableName: "jrpupsnstuffdogs",
+        TableName: process.env.DYNAMO_TABLE_NAME,
         Key: {
           dogId: idToDelete,
         },
@@ -50,7 +50,7 @@ function deletePetsFromDynamo(idToDelete) {
 function savePetsToDynamo(dogs) {
   return dynamo
     .put({
-      TableName: "jrpupsnstuffdogs",
+      TableName: process.env.DYNAMO_TABLE_NAME,
       Item: {
         dogId: new Date().toString(),
         dogs,
@@ -61,10 +61,6 @@ function savePetsToDynamo(dogs) {
 
 function petsDiff(newPets, oldPets) {
   return differenceBy(newPets, oldPets, "id");
-}
-
-function mergeNewPets(newPets, oldPets) {
-  return [...oldPets, ...newPets];
 }
 
 function getIframeFromPetUrl(html) {
@@ -79,7 +75,7 @@ function getPetsFromIframeHTML(html) {
   $(".list-item").each((index, dogInfoBlock) => {
     const id = $(".list-animal-id", dogInfoBlock).text();
     if (!id) return;
-    const url = `http://ws.petango.com/webservices/adoptablesearch/wsAdoptableAnimalDetails.aspx?id=${id}`;
+    const url = `${process.env.THIRD_PARTY_URL}${id}`;
     const photo = $(".list-animal-photo", dogInfoBlock)
       .attr("src")
       .replace("_TN1", ""); // remove the thumbnail declaration
@@ -112,6 +108,5 @@ module.exports = {
   savePetsToDynamo,
   deletePetsFromDynamo,
   petsDiff,
-  mergeNewPets,
   sendTwilioTextMessage,
 };

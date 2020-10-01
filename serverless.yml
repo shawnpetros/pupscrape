@@ -8,6 +8,14 @@ provider:
   name: aws
   runtime: nodejs12.x
 functions:
+  environment:
+    TWILIO_ACCOUNT_SID: ${param:twilio_account_sid}
+    TWILIO_AUTH_TOKEN: ${param:twilio_auth_token}
+    TWILIO_DEST_NUMS: ${param:twilio_dest_nums}
+    TWILIO_SRC_NUM: ${param:twilio_src_num}
+    DYNAMO_TABLE_NAME: ${param:dynamo_table_name}
+    RESCUE_URL: ${param:rescue_url}
+    THIRD_PARTY_URL: ${param:third_party_url}
   writePets:
     handler: handler.writePets
     events:
@@ -16,11 +24,6 @@ functions:
           path: parse
           method: get
           cors: true
-    environment:
-      TWILIO_ACCOUNT_SID: ${param:twilio_account_sid}
-      TWILIO_AUTH_TOKEN: ${param:twilio_auth_token}
-      TWILIO_DEST_NUMS: ${param:twilio_dest_nums}
-      TWILIO_SRC_NUM: ${param:twilio_src_num}
   getPets:
     handler: handler.getPets
     events:
