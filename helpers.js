@@ -19,7 +19,7 @@ async function sendTwilioTextMessage(numDogs) {
     client.messages.create({
       to,
       from,
-      body: `there are ${numDogs} new dogs listed today`,
+      body: `there are ${numDogs} new dogs listed today, find them here: https://bit.ly/3jOgBVl`,
     })
   );
 

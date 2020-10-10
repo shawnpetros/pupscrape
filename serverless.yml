@@ -7,7 +7,6 @@ app: pupscrape
 provider:
   name: aws
   runtime: nodejs12.x
-functions:
   environment:
     TWILIO_ACCOUNT_SID: ${param:twilio_account_sid}
     TWILIO_AUTH_TOKEN: ${param:twilio_auth_token}
@@ -16,6 +15,7 @@ functions:
     DYNAMO_TABLE_NAME: ${param:dynamo_table_name}
     RESCUE_URL: ${param:rescue_url}
     THIRD_PARTY_URL: ${param:third_party_url}
+functions:
   writePets:
     handler: handler.writePets
     events:
